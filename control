@@ -1,9 +1,10 @@
 Package: com.bensge.gesturesplus
 Name: GesturesPlus
+Pre-Depends: firmware (>= 7.0)
 Depends: mobilesubstrate
-Version: 0.0.1
+Version: 0.2
 Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
-Maintainer: bensge
+Description: fix pinch-to-close iOS 7.0 animation
+Maintainer: insanj <insanjmail@gmail.com>
 Author: bensge
 Section: Tweaks
