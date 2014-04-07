@@ -17,10 +17,8 @@ static BOOL blockALLDemCalls = NO, ignoreUnscatterBecauseRepeat = NO;
 
 %hook SBAnimationStepper
 
-
-// Prevents all views besides the SBAppWindow (the homescreen icon-holder view)
-// from step-animating into the homescreen. The final spring is /not/ a stepAnimation,
-// so this won't effect the final result of the pinch-to-close gesture.
+// Prevents graphical / gesture mishaps when other views are step-animating, such as
+// apps zooms (when opening or closing to homescreen without gesture).
 - (void)stepAnimationsInView:(UIView *)view animatingSubviews:(NSArray *)subviews duration:(double)duration {
 	if ([view isKindOfClass:objc_getClass("SBAppWindow")]) {
 		if (subviews.count > 0) {
@@ -35,8 +33,7 @@ static BOOL blockALLDemCalls = NO, ignoreUnscatterBecauseRepeat = NO;
 // Doesn't appear to be called when gesturing (at least on iPhone):
 // -(void)setPercentage
 
-// Calls the standard unscatter animation steps for when zooming backwards (away from
-// the homescreen), to prevent gesture ignorance.
+// Completes (final swooshes) the scatter animation (backwards, away from home screen).
 - (void)finishBackwardToStart {
 	%orig();
 	[[objc_getClass("SBIconController") sharedInstance] unscatterAnimated:YES afterDelay:0 withCompletion:nil];
@@ -66,8 +63,8 @@ static BOOL blockALLDemCalls = NO, ignoreUnscatterBecauseRepeat = NO;
 // the gesture is completed:
 // -(void)scatterAnimated:(BOOL)arg1 withCompletion:(id)arg2
 
-// If all other animations/gestures-in-progress have been completed, then finish
-// the unscatter animation / process.
+// Keystone. If the gesture began (_suspendGestureBegan), then NEVER finish scattering until
+// the gesture completed (the method finished executing). Also has safeguard against misfires.
 - (void)unscatterAnimated:(BOOL)animated afterDelay:(double)delay withCompletion:(id)completion {
 	if (!blockALLDemCalls && !ignoreUnscatterBecauseRepeat) {
 		%orig;
@@ -78,13 +75,15 @@ static BOOL blockALLDemCalls = NO, ignoreUnscatterBecauseRepeat = NO;
 
 %hook SBUIController
 
-// Similar to above functions...
+// Similar to the -finishXXXtoXXX functions, but for cancelled gestures.
 - (void)restoreContentAndUnscatterIconsAnimated:(BOOL)animated withCompletion:(id)completion {
 	if (!blockALLDemCalls) {
 		%orig();
 	}
 }
 
+// The pinch-gesture began. Probably runs in main loop, and finishes executing when
+// the gesture has finally been completed or cancelled.
 - (void)_suspendGestureBegan {
 	blockALLDemCalls = YES;
 	%orig();
