@@ -5,8 +5,8 @@ ARCHS=armv7 armv7s arm64
 include theos/makefiles/common.mk
 
 TWEAK_NAME = GesturesPlus
-GesturesPlus_FILES = Tweak.xm
-GesturesPlus_FRAMEWORKS = UIKit CoreGraphics QuartzCore
+GesturesPlus_FILES = GesturesPlus.xm
+GesturesPlus_FRAMEWORKS = UIKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
